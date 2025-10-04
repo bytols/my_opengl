@@ -14,7 +14,9 @@ class App():
         glClearColor(0.3 , 0.2, 0.2, 1)
         self.shader = self.createShaders("shaders/vertex.txt", "shaders/fragment.txt")
         glUseProgram(self.shader)
+        glUniform1i(glGetUniformLocation(self.shader, "imageTexture"), 0)
         self.triangle = Triangle()
+        self.wood_texture = Material("textures/299936.png")
         self.main_loop()
 
     def createShaders(self, vertexFilepath, fragmentFilepath):
@@ -42,6 +44,7 @@ class App():
             glClear(GL_COLOR_BUFFER_BIT)
 
             glUseProgram(self.shader)
+            self.wood_texture.use()
             glBindVertexArray(self.triangle.vao)
             glDrawArrays(GL_TRIANGLES, 0, self.triangle.vertex_count)
             pg.display.flip()
@@ -52,6 +55,7 @@ class App():
 
         self.triangle.destroy()
         glDeleteProgram(self.shader)
+        self.wood_texture.destroy()
         pg.quit()
 
 class Triangle():
@@ -84,20 +88,20 @@ class Triangle():
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
         
-class Texture():
+class Material():
 
     def __init__(self, filepath):
 
         self.texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
-        glTextParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTextParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTextParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTextParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         image = pg.image.load(filepath).convert()
         image_width, image_height = image.get_rect().size
         image_data = pg.image.tostring(image, "RGBA")
-        glTexImage2D(GL_TEXTURE, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data)
         glGenerateMipmap(GL_TEXTURE_2D)
 
     def use(self):
