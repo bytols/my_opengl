@@ -33,3 +33,74 @@ def create_shader_from_single_file(filepath):
     )
     
     return shader
+
+# Em um arquivo como utils.py
+
+def load_model_from_file(filepath):
+    """
+    Lê um arquivo .obj e retorna uma tupla de vértices
+    no formato (x, y, z, u, v).
+    """
+    v = []   # Lista de posições de vértices (x,y,z)
+    vt = []  # Lista de coordenadas de textura (u,v)
+    vn = []  # Lista de normais (não vamos usar por enquanto)
+    
+    vertices_finais = []
+
+    with open(filepath, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+                
+            parts = line.split()
+            
+            if parts[0] == 'v':
+                # Posição do vértice
+                v.append([float(parts[1]), float(parts[2]), float(parts[3])])
+                
+            elif parts[0] == 'vt':
+                # Coordenada de textura
+                vt.append([float(parts[1]), float(parts[2])])
+                
+            elif parts[0] == 'vn':
+                # Normal (guardamos mas não usamos ainda)
+                vn.append([float(parts[1]), float(parts[2]), float(parts[3])])
+                
+            elif parts[0] == 'f':
+                # Face no formato: f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+                face_data = parts[1:]
+                
+                # Coleta os vértices da face
+                face_vertices = []
+                for vertex_data in face_data:
+                    indices = vertex_data.split('/')
+                    
+                    # Índices começam em 1 no .obj
+                    v_idx = int(indices[0]) - 1
+                    
+                    # Coordenada de textura (segunda posição)
+                    if len(indices) > 1 and indices[1]:
+                        vt_idx = int(indices[1]) - 1
+                        if vt_idx >= 0 and vt_idx < len(vt):
+                            tex_coord = vt[vt_idx]
+                        else:
+                            tex_coord = [0.0, 0.0]
+                    else:
+                        tex_coord = [0.0, 0.0]
+                    
+                    position = v[v_idx]
+                    face_vertices.append((position, tex_coord))
+                
+                # Triangula a face se tiver mais de 3 vértices
+                for i in range(1, len(face_vertices) - 1):
+                    # Cria triângulo com vértices 0, i, i+1
+                    for idx in [0, i, i+1]:
+                        pos, tex = face_vertices[idx]
+                        vertices_finais.extend(pos)
+                        vertices_finais.extend(tex)
+
+    print(f"Carregado: {len(v)} vértices, {len(vt)} coords de textura, {len(vn)} normais")
+    print(f"Total de floats no array final: {len(vertices_finais)}")
+    
+    return tuple(vertices_finais)

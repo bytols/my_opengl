@@ -21,6 +21,7 @@ class Texture():
         # carregando binário da imagem
         image = pg.image.load(filepath).convert_alpha()
         # pegando altura e comprimento da imagem
+        image = pg.transform.flip(image, False, True)
         image_width, image_height = image.get_rect().size
         # convertendo binário para string com RGBA
         image_data = pg.image.tostring(image, "RGBA")
