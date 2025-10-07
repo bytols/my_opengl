@@ -99,8 +99,7 @@ def load_model_from_file(filepath):
                         pos, tex = face_vertices[idx]
                         vertices_finais.extend(pos)
                         vertices_finais.extend(tex)
-
-    print(f"Carregado: {len(v)} vértices, {len(vt)} coords de textura, {len(vn)} normais")
-    print(f"Total de floats no array final: {len(vertices_finais)}")
     
     return tuple(vertices_finais)
+
+

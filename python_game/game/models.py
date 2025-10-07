@@ -141,3 +141,43 @@ class exp_model():
     def destroy(self):
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
+
+class Square():
+
+    def __init__(self, largura, altura):
+
+        # Vértices (Posição X, Y e Coordenadas de Textura U, V)
+        self.vertices = (
+            # Posição          # Textura
+            -largura / 2, -altura / 2,  0.0, 0.0,  # 0: Canto inferior esquerdo
+            largura / 2, -altura / 2,  1.0, 0.0,  # 1: Canto inferior direito
+            largura / 2,  altura / 2,  1.0, 1.0,  # 2: Canto superior direito
+
+            -largura / 2, -altura / 2,  0.0, 0.0,  # 0: Canto inferior esquerdo
+            largura / 2,  altura / 2,  1.0, 1.0,  # 2: Canto superior direito
+            -largura / 2,  altura / 2,  0.0, 1.0,  # 3: Canto superior esquerdo
+        )
+        # conveting to array
+        self.vertices = np.array(self.vertices, dtype=np.float32)
+
+        self.vertex_count = len(self.vertices) // 4
+
+        # creating manual for building the object
+        self.vao = glGenVertexArrays(1)
+        #ligando a instrução para a GPU com index 1?
+        glBindVertexArray(self.vao)
+        #creating the buffer that will hold the obj
+        self.vbo = glGenBuffers(1)
+        # binding the buffer to the gpu
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+        # Definindo o tamanho do buffer
+        glBufferData(GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_STATIC_DRAW)
+        #definindo os atributos
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, ctypes.c_void_p(0))
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, ctypes.c_void_p(8))
+
+    def destroy(self):
+        glDeleteVertexArrays(1, (self.vao,))
+        glDeleteBuffers(1, (self.vbo,))

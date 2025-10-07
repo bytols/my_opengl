@@ -1,19 +1,23 @@
 import pygame as pg
+from pygame import mixer
 from OpenGL.GL import *
 import numpy as np
 import ctypes
 from OpenGL.GL.shaders import compileProgram, compileShader
-from models import Street, Tunel, exp_model
+from models import Street, Tunel, exp_model, Square
 from textures import Texture
 from utils import create_shader_from_single_file
-from props import check_colision
+from props import Props_class
 import pyrr
+import time
 
 class App():
 
     def __init__(self):
 
         pg.init()
+        mixer.init()
+        mixer.music.load("../song/music.wav")
         # create the window
         pg.display.set_mode((1080, 720) , pg.OPENGL|pg.DOUBLEBUF) #double buff logic
         # define the clear color for glclear
@@ -48,19 +52,23 @@ class App():
 
         self.modelMatrixLocation = glGetUniformLocation(self.shader, "model")
         self.car_pos = [0, 1 , 2]
-        self.prop_pos = [1, 1, -25]
         self.main_car = exp_model("../models/vehicle-drag-racer.obj")
         self.obj_texture = Texture("../models/Textures/colormap.png")
         self.street = Street()
-        self.street_texture = Texture("../textures/asfalto.jpg")
+        self.street_texture = Texture("../textures/asfalto.png")
         self.tunel = Tunel()
-        self.tunel_texture = Texture("../textures/tijolo.jpg")
-        self.cone = exp_model("../models/item-cone.obj")
+        self.tunel_texture = Texture("../textures/tijolo.png")
+        self.create_props = Props_class()
+        self.back = Square(150.00 , 150.00)
+        self.back_texture = Texture("../textures/background.png")
+        self.empty = Square(20.00, 10.00)
+        self.empty_texture = Texture("../textures/black.jpg")
         self.main_loop()
 
 
     def main_loop(self):
         running = True
+        mixer.music.play()
         while (running):
 
             for event in pg.event.get():
@@ -75,9 +83,26 @@ class App():
                 self.car_pos[0] -= 0.01
             elif keys[pg.K_d] and self.car_pos[0] < +2:
                 self.car_pos[0] += 0.01
-            self.prop_pos[2] += 0.01
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glUseProgram(self.shader) 
+
+            #draw background
+            self.back_texture.use()
+            glBindVertexArray(self.back.vao)
+            posicao_back = [0, -17.5 , -80.0]
+            matriz_back = pyrr.matrix44.create_from_translation(vec=posicao_back ,dtype=np.float32)
+            glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, matriz_back)
+            glDrawArrays(GL_TRIANGLES, 0, self.back.vertex_count)    
+
+            #draw black_pit
+            self.empty_texture.use()
+            glBindVertexArray(self.empty.vao)
+            posicao_empty = [0, 0 , -70.0]
+            matriz_empty = pyrr.matrix44.create_from_translation(vec=posicao_empty ,dtype=np.float32)
+            glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, matriz_empty)
+            glDrawArrays(GL_TRIANGLES, 0, self.empty.vertex_count)    
+
+            #draw street
             self.street_texture.use()
             glBindVertexArray(self.street.vao)
             model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
@@ -99,16 +124,10 @@ class App():
             glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, matriz_main_car)
             glDrawArrays(GL_TRIANGLES, 0, self.main_car.vertex_count)
 
-            #draw cone
-            self.obj_texture.use()
-            glBindVertexArray(self.cone.vao)
-            matriz_cone = pyrr.matrix44.create_from_translation(vec=self.prop_pos ,dtype=np.float32)
-            glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, matriz_cone)
-            glDrawArrays(GL_TRIANGLES, 0, self.cone.vertex_count)
-
-            if check_colision(self.car_pos, self.prop_pos) == True:
-                running = False
-            
+            self.create_props.draw_props()
+            if self.create_props.check_colision(self.car_pos) == True:
+                print("bateu")
+                running = False         
 
             pg.display.flip() # change to the second buffer
         self.quit()
@@ -118,6 +137,8 @@ class App():
         self.tunel.destroy()
         self.street.destroy()
         self.main_car.destroy()
+        self.empty.destroy()
+        self.back.destroy()
         pg.quit()
 
 App()
