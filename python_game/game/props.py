@@ -52,7 +52,7 @@ class Props_class():
             "../models/item-cone.obj",
             "../models/item-banana.obj",
             "../models/item-box.obj",
-            "../models/wheel-small.obj",
+            "../models/wheel-large.obj",
             "../models/tree.obj",
         ]
 
@@ -89,6 +89,8 @@ class Props_class():
             obj = exp_model(self.models[tex])
             position = random.randint (-2, 2)
             position_list = [position, 1, -25]
+            if (tex == 3):
+                position_list = [position, 1.5, -25]
             element = [obj, position_list]
             self.props.append(element)
 
@@ -107,7 +109,7 @@ class Props_class():
             distancia_z = abs(pos_carro[2] - pos_prop[2])
             
             # A soma dos "meio-tamanhos" é 0.5 + 0.5 = 1.0
-            tamanho_total_colisao = 0.6
+            tamanho_total_colisao = 0.5
             
             # Se a distância em AMBOS os eixos for menor que o tamanho total, há colisão
             if distancia_x < tamanho_total_colisao and distancia_z < tamanho_total_colisao:

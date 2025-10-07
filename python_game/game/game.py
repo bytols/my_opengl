@@ -19,7 +19,7 @@ class App():
         mixer.init()
         mixer.music.load("../song/music.wav")
         # create the window
-        pg.display.set_mode((1080, 720) , pg.OPENGL|pg.DOUBLEBUF) #double buff logic
+        pg.display.set_mode((1920, 1080) , pg.OPENGL|pg.DOUBLEBUF) #double buff logic
         # define the clear color for glclear
         glClearColor(0.1, 0.2, 0.3, 1)
         glEnable(GL_DEPTH_TEST)
@@ -63,6 +63,7 @@ class App():
         self.back_texture = Texture("../textures/background.png")
         self.empty = Square(20.00, 10.00)
         self.empty_texture = Texture("../textures/black.jpg")
+        self.tempo_anterior = time.time()
         self.main_loop()
 
 
@@ -74,15 +75,19 @@ class App():
             for event in pg.event.get():
                 if (event.type == pg.QUIT):
                     running = False
+            VELOCIDADE_CARRO = 2.5
+            tempo_agora = time.time()
+            delta_time = tempo_agora - self.tempo_anterior
+            self.tempo_anterior = tempo_agora
             keys = pg.key.get_pressed()
-            if keys[pg.K_w] and self.car_pos[2] > -5: # Tecla 'A'
-                self.car_pos[2] -= 0.01
-            elif keys[pg.K_s] and self.car_pos[2] < 2: # Tecla 'D'
-                self.car_pos[2] += 0.01
-            elif keys[pg.K_a] and self.car_pos[0] > -2: # Tecla 'A'
-                self.car_pos[0] -= 0.01
+            if keys[pg.K_w] and self.car_pos[2] > -5:
+                self.car_pos[2] -= VELOCIDADE_CARRO * delta_time
+            elif keys[pg.K_s] and self.car_pos[2] < 2:
+                self.car_pos[2] += VELOCIDADE_CARRO * delta_time
+            elif keys[pg.K_a] and self.car_pos[0] > -2:
+                self.car_pos[0] -= VELOCIDADE_CARRO * delta_time
             elif keys[pg.K_d] and self.car_pos[0] < +2:
-                self.car_pos[0] += 0.01
+                self.car_pos[0] += VELOCIDADE_CARRO * delta_time
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glUseProgram(self.shader) 
 
